@@ -464,3 +464,14 @@
                 <hr>
                 <div class="result-row"><span>Geser 1 arah: Vu = ${formatNum(Vu_oneway)} kN, Tv = ${formatNum(Tv)} MPa</span><span>${shearStatusOneway}</span></div>
                 <div class="result-row"><span>Punching: Tv = ${formatNum(Tv_punch)} MPa, Vc = ${formatNum(Vc_punch)} MPa → ${punchingSafe}</span></div>
+                <div class="result-row"><span>🔧 Rekomendasi geser: ${shearReqText}</span></div>
+                <div class="result-row" style="border:none;"><em>Sketsa di atas menunjukkan dimensi aktual sesuai input.</em></div>
+            `;
+        }
+        
+        document.getElementById('calculateBtn').addEventListener('click', computeAndDraw);
+        window.addEventListener('load', computeAndDraw);
+    })();
+</script>
+</body>
+</html>
