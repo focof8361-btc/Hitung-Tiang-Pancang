@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Pile Cap Designer + Sketsa Dinamis</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: auto;
+        }
+        h1 {
+            color: #0f2b4d;
+            font-size: 1.8rem;
+            margin: 0 0 0.5rem;
+        }
+        .sub {
+            color: #2c3e66;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #2563eb;
+            padding-left: 1rem;
+        }
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin: 0.8rem 0 0.3rem;
+            color: #1e293b;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 1rem;
+            font-size: 1rem;
+        }
+        .input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .input-group input {
+            flex: 1;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1.2rem;
+            width: 100%;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .result-box {
+            background: #f8fafc;
+            border-radius: 1.2rem;
+            padding: 1.2rem;
+            margin-top: 1rem;
+        }
+        .result-title {
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 8px 0;
+        }
+        .status-safe {
+            color: #15803d;
+            background: #dcfce7;
+            padding: 2px 12px;
+            border-radius: 20px;
+        }
+        .status-warning {
+            color: #b91c1c;
+            background: #fee2e2;
+            padding: 2px 12px;
+            border-radius: 20px;
+        }
+        .canvas-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .canvas-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 0.8rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        canvas {
+            background: #fefefe;
+            border-radius: 0.8rem;
+            border: 1px solid #cbd5e1;
+            max-width: 100%;
+            height: auto;
+        }
+        hr {
+            margin: 1rem 0;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #4b5563;
+            margin-top: 2rem;
+        }
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .card { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🏗️ Pile Cap Designer + Sketsa Dimensi</h1>
+    <div class="sub">Input data → Sketsa plan & section otomatis diperbarui dengan nilai riil</div>
+
+    <div class="card">
+        <div class="grid-2">
+            <div>
+                <label>📌 Jumlah tiang</label>
+                <select id="pileCount">
+                    <option value="2">2 Pile (baris)</option>
+                    <option value="3">3 Pile (segitiga)</option>
+                    <option value="4">4 Pile (persegi)</option>
+                    <option value="5">5 Pile (pusat + 4 sudut)</option>
+                </select>
+                <label>🏛️ Mutu beton f'c (MPa)</label>
+                <input type="number" id="fc" value="30" step="5">
+                <label>⚙️ Mutu baja fy (MPa)</label>
+                <input type="number" id="fy" value="500" step="50">
+                <label>📏 Diameter tiang (mm)</label>
+                <input type="number" id="pileDia" value="600" step="50">
+                <label>🧱 Dimensi kolom (mm) a x b</label>
+                <div class="input-group">
+                    <input type="number" id="colA" value="600" placeholder="a (mm)">
+                    <input type="number" id="colB" value="600" placeholder="b (mm)">
+                </div>
+            </div>
+            <div>
+                <label>📐 Jarak antar pusat tiang - S (mm)</label>
+                <input type="number" id="spacing" value="1650" step="50">
+                <label>📏 Tebal pile cap (h) mm</label>
+                <input type="number" id="h" value="1200" step="50">
+                <label>⚖️ Beban kolom terfaktor (kN)</label>
+                <input type="number" id="load" value="2354" step="100">
+                <label>📐 Lebar pile cap (mm) *opsional</label>
+                <input type="number" id="capWidth" placeholder="Auto hitung">
+                <label>📏 Panjang pile cap (mm) *opsional</label>
+                <input type="number" id="capLength" placeholder="Auto hitung">
+            </div>
+        </div>
+        <button id="calculateBtn">🚀 Hitung & Gambar Ulang</button>
+    </div>
+
+    <!-- CANVAS UNTUK SKETSA -->
+    <div class="canvas-container">
+        <div class="canvas-card">
+            <h3>📐 PLAN VIEW (atas)</h3>
+            <canvas id="planCanvas" width="550" height="400" style="width:100%; height:auto; max-width:550px; border:1px solid #ccc"></canvas>
+            <p style="font-size:0.75rem; margin-top:5px;">Sketsa proporsional - dimensi aktual tertulis di gambar</p>
+        </div>
+        <div class="canvas-card">
+            <h3>✂️ SECTION (potongan)</h3>
+            <canvas id="sectionCanvas" width="550" height="250" style="width:100%; height:auto; max-width:550px; border:1px solid #ccc"></canvas>
+            <p style="font-size:0.75rem;">Tebal cap, tulangan utama, dan tiang pancang</p>
+        </div>
+    </div>
+
+    <div id="results" class="card">
+        <div class="result-title">📋 Hasil Desain Struktur</div>
+        <div style="color: #4b5563;">Klik "Hitung & Gambar Ulang" untuk melihat rekomendasi tulangan dan cek geser.</div>
+    </div>
+    <footer>⚡ PWA Desain Pile Cap | Sketsa otomatis sesuai input | Geser 1 arah & 2 arah (SNI)</footer>
+</div>
+
+<script>
+    (function() {
+        // --- helper ambil elemen ---
+        function formatNum(x) { return x.toFixed(1); }
+
+        // GAMBAR PLAN dan SECTION
+        function drawPlan(ctx, nPile, capW, capL, spacing, pileDia, colA, colB, d, h) {
+            const w = ctx.canvas.width, h_c = ctx.canvas.height;
+            ctx.clearRect(0, 0, w, h_c);
+            ctx.strokeStyle = "#2c3e66";
+            ctx.fillStyle = "#e9f0fc";
+            ctx.fillRect(0, 0, w, h_c);
+            
+            // Skala: kita pilih skala agar gambar muat, tapi tetap tampilkan nilai dimensi asli
+            const margin = 40;
+            const drawWidth = w - 2*margin;
+            const drawHeight = h_c - 2*margin;
+            const scaleX = drawWidth / capL;
+            const scaleY = drawHeight / capW;
+            const scale = Math.min(scaleX, scaleY);
+            const offsetX = margin + (drawWidth - capL*scale)/2;
+            const offsetY = margin + (drawHeight - capW*scale)/2;
+            
+            // gambar outline pile cap
+            ctx.strokeStyle = "#1e3a8a";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(offsetX, offsetY, capL*scale, capW*scale);
+            ctx.fillStyle = "#d9e8ff";
+            ctx.fillRect(offsetX, offsetY, capL*scale, capW*scale);
+            // label dimensi cap
+            ctx.font = "12px sans-serif";
+            ctx.fillStyle = "#0f2b4d";
+            ctx.fillText(`L = ${capL} mm`, offsetX + capL*scale/2 - 30, offsetY - 8);
+            ctx.fillText(`W = ${capW} mm`, offsetX - 35, offsetY + capW*scale/2);
+            
+            // fungsi gambar tiang (lingkaran)
+            function drawPile(x_mm, y_mm) {
+                let x = offsetX + x_mm * scale;
+                let y = offsetY + y_mm * scale;
+                let r = (pileDia/2) * scale;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, 2*Math.PI);
+                ctx.fillStyle = "#b0c4de";
+                ctx.fill();
+                ctx.strokeStyle = "#2c3e66";
+                ctx.stroke();
+                ctx.fillStyle = "#000";
+                ctx.font = "10px sans-serif";
+                ctx.fillText(`Ø${pileDia}`, x-15, y-10);
+            }
+            
+            // koordinat tiang berdasarkan jumlah
+            const centerX = capL/2, centerY = capW/2;
+            if (nPile === 2) {
+                let jarak = spacing/2;
+                drawPile(centerX - jarak, centerY);
+                drawPile(centerX + jarak, centerY);
+                // garis bantu jarak antar tiang
+                let x1 = offsetX + (centerX - jarak)*scale;
+                let x2 = offsetX + (centerX + jarak)*scale;
+                let yMid = offsetY + centerY*scale;
+                ctx.beginPath();
+                ctx.moveTo(x1, yMid-5);
+                ctx.lineTo(x2, yMid-5);
+                ctx.strokeStyle = "red";
+                ctx.stroke();
+                ctx.fillStyle = "red";
+                ctx.fillText(`S = ${spacing} mm`, (x1+x2)/2 - 30, yMid-8);
+            } 
+            else if (nPile === 3) {
+                // segitiga sama sisi: dua tiang bawah, satu di atas
+                let jarakX = spacing/2;
+                let jarakY = spacing * Math.sqrt(3)/3; // tinggi segitiga dari pusat
+                drawPile(centerX - jarakX, centerY + jarakY/2);
+                drawPile(centerX + jarakX, centerY + jarakY/2);
+                drawPile(centerX, centerY - jarakY);
+                ctx.fillStyle = "red";
+                ctx.fillText(`S = ${spacing} mm`, centerX+20, centerY-30);
+            }
+            else if (nPile === 4) {
+                let offset = spacing/2;
+                drawPile(centerX - offset, centerY - offset);
+                drawPile(centerX + offset, centerY - offset);
+                drawPile(centerX - offset, centerY + offset);
+                drawPile(centerX + offset, centerY + offset);
+                ctx.fillStyle = "red";
+                ctx.fillText(`S = ${spacing} mm`, centerX+20, centerY-30);
+            }
+            else if (nPile === 5) {
+                let offset = spacing/2;
+                drawPile(centerX - offset, centerY - offset);
+                drawPile(centerX + offset, centerY - offset);
+                drawPile(centerX - offset, centerY + offset);
+                drawPile(centerX + offset, centerY + offset);
+                drawPile(centerX, centerY);
+            }
+            
+            // gambar kolom pedestal (persegi)
+            let colW_mm = colA, colH_mm = colB;
+            let rectX = offsetX + (centerX - colW_mm/2)*scale;
+            let rectY = offsetY + (centerY - colH_mm/2)*scale;
+            ctx.fillStyle = "#f4c542";
+            ctx.fillRect(rectX, rectY, colW_mm*scale, colH_mm*scale);
+            ctx.strokeStyle = "#b97f10";
+            ctx.strokeRect(rectX, rectY, colW_mm*scale, colH_mm*scale);
+            ctx.fillStyle = "#000";
+            ctx.fillText(`Kolom ${colW_mm}x${colH_mm}`, rectX+5, rectY-5);
+        }
+        
+        function drawSection(ctx, capW, capL, h, d, pileDia, colA, colB, nPile) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            const w = ctx.canvas.width, h_c = ctx.canvas.height;
+            const margin = 40;
+            let capThick = h;
+            let groundY = h_c - margin;
+            let capTopY = groundY - capThick * 0.4; // scaling
+            let scaleH = 0.4; // faktor visual
+            ctx.fillStyle = "#e2e8f0";
+            ctx.fillRect(30, capTopY, w-60, capThick*scaleH);
+            ctx.strokeRect(30, capTopY, w-60, capThick*scaleH);
+            // gambar tulangan utama
+            ctx.fillStyle = "#b91c1c";
+            for (let i=0; i<6; i++) {
+                ctx.fillRect(80 + i*70, capTopY + d*scaleH - 8, 12, 8);
+            }
+            ctx.fillStyle = "#000";
+            ctx.fillText(`Tebal cap h = ${h} mm`, 50, capTopY-10);
+            ctx.fillText(`Efektif d = ${d} mm`, 50, capTopY + d*scaleH);
+            // gambar tiang pancang
+            let pileY = capTopY + capThick*scaleH - 10;
+            for (let i=0; i<Math.min(nPile,3); i++) {
+                ctx.fillStyle = "#9ca3af";
+                ctx.fillRect(100 + i*150, pileY, 30, 40);
+                ctx.fillStyle = "black";
+                ctx.fillText(`Ø${pileDia}`, 105+i*150, pileY+25);
+            }
+            ctx.fillStyle = "#1e3a8a";
+            ctx.fillText("Tulangan lentur (skematis)", 200, capTopY+30);
+        }
+        
+        // hitung ulang dan gambar ulang
+        function computeAndDraw() {
+            const nPile = parseInt(document.getElementById('pileCount').value);
+            const fc = parseFloat(document.getElementById('fc').value);
+            const fy = parseFloat(document.getElementById('fy').value);
+            const pileDia = parseFloat(document.getElementById('pileDia').value);
+            const colA = parseFloat(document.getElementById('colA').value);
+            const colB = parseFloat(document.getElementById('colB').value);
+            let S = parseFloat(document.getElementById('spacing').value);
+            let h = parseFloat(document.getElementById('h').value);
+            let Pu = parseFloat(document.getElementById('load').value);
+            let manualW = parseFloat(document.getElementById('capWidth').value);
+            let manualL = parseFloat(document.getElementById('capLength').value);
+            if (isNaN(Pu)) Pu = 2000;
+            if (isNaN(S)) S = 3*pileDia;
+            const d = h - 75;
+            // hitung dimensi cap
+            const clearCover = 150;
+            let capW, capL;
+            if (nPile === 2) {
+                capW = (!isNaN(manualW) && manualW>0) ? manualW : pileDia + 2*clearCover;
+                capL = (!isNaN(manualL) && manualL>0) ? manualL : S + pileDia + 2*clearCover;
+            } else if (nPile === 3) {
+                capW = (!isNaN(manualW) && manualW>0) ? manualW : S + pileDia + 2*clearCover;
+                capL = (!isNaN(manualL) && manualL>0) ? manualL : S + pileDia + 2*clearCover;
+            } else { // 4 atau 5
+                capW = (!isNaN(manualW) && manualW>0) ? manualW : S + pileDia + 2*clearCover;
+                capL = (!isNaN(manualL) && manualL>0) ? manualL : S + pileDia + 2*clearCover;
+            }
+            
+            // Gambar plan & section
+            const planCanvas = document.getElementById('planCanvas');
+            const ctxPlan = planCanvas.getContext('2d');
+            drawPlan(ctxPlan, nPile, capW, capL, S, pileDia, colA, colB, d, h);
+            const secCanvas = document.getElementById('sectionCanvas');
+            const ctxSec = secCanvas.getContext('2d');
+            drawSection(ctxSec, capW, capL, h, d, pileDia, colA, colB, nPile);
+            
+            // --- PERHITUNGAN TEKNIS (TULANGAN, GESER) ---
+            let R = Pu / nPile;
+            let lebarKolomX = colA, lebarKolomY = colB;
+            let Mx=0, My=0;
+            if (nPile === 2) {
+                let jarak = (S - lebarKolomX)/2;
+                if (jarak<0) jarak=0;
+                Mx = R * jarak;
+            } else if (nPile === 3) {
+                let jarak = (S - lebarKolomX)/2;
+                if (jarak<0) jarak=0;
+                Mx = 2*R*jarak;
+                My = 2*R*jarak;
+            } else if (nPile === 4 || nPile ===5) {
+                let jarakX = (S - lebarKolomX)/2;
+                let jarakY = (S - lebarKolomY)/2;
+                if (jarakX<0) jarakX=0;
+                if (jarakY<0) jarakY=0;
+                Mx = 2*R*jarakX;
+                My = 2*R*jarakY;
+            }
+            const factor = 0.9;
+            let As_needed_x = (Mx * 1e6) / (factor * fy * d);
+            let As_needed_y = (My * 1e6) / (factor * fy * d);
+            if (As_needed_x<0) As_needed_x=0;
+            if (As_needed_y<0) As_needed_y=0;
+            let As_min_x = 0.0015 * capW * h;
+            let As_min_y = 0.0015 * capL * h;
+            let final_As_x = Math.max(As_needed_x, As_min_x);
+            let final_As_y = Math.max(As_needed_y, As_min_y);
+            let diaBar = 25;
+            let areaBar = Math.PI*diaBar*diaBar/4;
+            let nBars_x = Math.ceil(final_As_x / areaBar);
+            let nBars_y = Math.ceil(final_As_y / areaBar);
+            let Ast_prov_x = nBars_x * areaBar;
+            let Ast_prov_y = nBars_y * areaBar;
+            
+            // Geser satu arah
+            let Vu_oneway = 0;
+            if (nPile === 2) {
+                let jarakPotong = (S/2 - (lebarKolomX/2 + d));
+                if (jarakPotong > 0) Vu_oneway = R;
+                else Vu_oneway = 0;
+            } else {
+                let jmlTiangLuar = (nPile===3?2:2);
+                Vu_oneway = jmlTiangLuar * R;
+            }
+            let Vc = 0.17 * Math.sqrt(fc);
+            let lebarGeser = (nPile===2) ? capW : Math.max(capW, capL);
+            let Tv = (Vu_oneway * 1000) / (lebarGeser * d);
+            let shearStatusOneway = (Tv <= Vc) ? "✅ AMAN (tanpa sengkang)" : "⚠️ PERLU SENGKANG";
+            // punching
+            let bo = 2 * ((colA + d) + (colB + d));
+            let Tv_punch = (Pu * 1000) / (bo * d);
+            let Vc_punch = 0.33 * Math.sqrt(fc);
+            let punchingSafe = (Tv_punch <= Vc_punch) ? "✅ Aman geser 2 arah" : "❌ Perbesar tebal cap";
+            let shearReqText = "";
+            if (Tv > Vc && Vu_oneway > 0) {
+                shearReqText = `Pasang sengkang Ø10-150 mm c/c (daerah kritis)`;
+            } else {
+                shearReqText = "Tulangan geser minimum cukup";
+            }
+            
+            const resultDiv = document.getElementById('results');
+            resultDiv.innerHTML = `
+                <div class="result-title">📊 Hasil Perhitungan (${nPile} tiang)</div>
+                <div class="result-row"><strong>Beban Pu:</strong> ${formatNum(Pu)} kN</div>
+                <div class="result-row"><strong>Dimensi cap:</strong> ${formatNum(capW)} x ${formatNum(capL)} mm, tebal ${h} mm</div>
+                <div class="result-row"><strong>Momen perlu Mx:</strong> ${formatNum(Mx)} kNm, <strong>My:</strong> ${formatNum(My)} kNm</div>
+                <div class="result-row"><strong>Tulangan X perlu:</strong> ${formatNum(final_As_x)} mm² → ${nBars_x} D${diaBar} (Ast= ${formatNum(Ast_prov_x)})</div>
+                <div class="result-row"><strong>Tulangan Y perlu:</strong> ${formatNum(final_As_y)} mm² → ${nBars_y} D${diaBar} (Ast= ${formatNum(Ast_prov_y)})</div>
+                <hr>
+                <div class="result-row"><span>Geser 1 arah: Vu = ${formatNum(Vu_oneway)} kN, Tv = ${formatNum(Tv)} MPa</span><span>${shearStatusOneway}</span></div>
+                <div class="result-row"><span>Punching: Tv = ${formatNum(Tv_punch)} MPa, Vc = ${formatNum(Vc_punch)} MPa → ${punchingSafe}</span></div>
